@@ -10,7 +10,7 @@ data Doc = Empty
          | Line
          | Concat Doc Doc
          | Union Doc Doc
-           deriving (Show,Eq)
+           deriving (Read,Show,Eq)
 -- Primitives
 -- Identity under concatenation
 empty :: Doc
