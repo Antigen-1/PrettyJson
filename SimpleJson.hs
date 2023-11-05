@@ -1,5 +1,5 @@
 -- | SimpleJson.hs
-{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
 
 module SimpleJson
   (
