@@ -1,6 +1,6 @@
 -- | SimpleJson.hs
 
-module SimpleJson
+module PrettyJson.SimpleJson
   (
     JValue(..)
   , getString

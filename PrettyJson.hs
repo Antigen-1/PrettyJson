@@ -1,13 +1,13 @@
 -- | PrettyJson.hs
 
-module PrettyJson (string, renderJValue) where
+module PrettyJson.PrettyJson (string, renderJValue) where
 
 import Numeric (showHex)
 import Data.Char (ord)
 import Data.Bits (shiftR, (.&.))
 
-import SimpleJson (JValue(..))
-import Prettify (Doc, (<->), char, integer, double, fsep, hcat, punctuate, text)
+import PrettyJson.SimpleJson (JValue(..))
+import PrettyJson.Prettify (Doc, (<->), char, integer, double, fsep, hcat, punctuate, text)
 
 -- Json String Constructor
 enclose :: Char -> Char -> Doc -> Doc
@@ -60,7 +60,6 @@ renderJValue (JObject obj) = series '{' '}' field obj
                           <-> renderJValue val
 
 -- $setup
--- >>> :module + Prettify
 -- >>> let value = renderJValue (JObject [("f", JInteger 1), ("q", JBool True)])
 --
 -- | Renderer

@@ -9,7 +9,7 @@ Maintainer:    zhanghao@antigen.top
 Cabal-Version: >= 1.2
 Build-Type: Simple
 library
-  Exposed-Modules: Prettify
-                   PrettyJson
-                   SimpleJson
+  Exposed-Modules: PrettyJson.Prettify
+                   PrettyJson.PrettyJson
+                   PrettyJson.SimpleJson
   Build-Depends:   base >= 2.0

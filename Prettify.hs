@@ -1,6 +1,6 @@
 -- | Prettyify.hs
 
-module Prettify where
+module PrettyJson.Prettify where
 
 data Doc = Empty
          | Char Char
