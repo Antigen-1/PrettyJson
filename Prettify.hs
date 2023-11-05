@@ -10,7 +10,7 @@ data Doc = Empty
          | Line
          | Concat Doc Doc
          | Union Doc Doc
-           deriving (Eq)
+           deriving (Show,Eq)
 -- Primitives
 -- Identity under concatenation
 empty :: Doc
@@ -122,7 +122,3 @@ pretty width x = best 0 [x]
 --
 -- >>> compact (char 'f' <-> text "oo")
 -- "foo"
-
--- Generic interfaces
-instance Show Doc where
-  show = compact
