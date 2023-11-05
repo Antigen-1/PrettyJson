@@ -6,7 +6,7 @@ import Numeric (showHex)
 import Data.Char (ord)
 import Data.Bits (shiftR, (.&.))
 
-import SimpleJson (JValue(..))
+import SimpleJson (JValue(..), JAry(..), JObj(..))
 import Prettify (Doc, (<->), char, integer, double, fsep, hcat, punctuate, text)
 
 -- Json String Constructor
@@ -53,14 +53,15 @@ renderJValue JNull         = text "null"
 renderJValue (JInteger num) = integer num
 renderJValue (JDouble num) = double num
 renderJValue (JString str) = string str
-renderJValue (JArray ary) = series '[' ']' renderJValue ary
-renderJValue (JObject obj) = series '{' '}' field obj
+renderJValue (JArray (JAry ary)) = series '[' ']' renderJValue ary
+renderJValue (JObject (JObj obj)) = series '{' '}' field obj
   where field (name,val) = string name
                           <-> text ": "
                           <-> renderJValue val
 
 -- $setup
--- >>> let value = renderJValue (JObject [("f", JInteger 1), ("q", JBool True)])
+-- >>> :module + SimpleJson
+-- >>> let value = renderJValue (toJValue (JObj [("f", toJValue 1), ("q", toJValue True)]))
 --
 -- | Renderer
 --

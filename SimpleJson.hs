@@ -1,15 +1,17 @@
 -- | SimpleJson.hs
+{-# LANGUAGE TypeSynonymInstances #-}
 
 module SimpleJson
   (
-    JValue(..)
-  , getString
-  , getInteger
-  , getDouble
-  , getBool
-  , getObject
-  , getArray
-  , isNull
+    JValue(..),
+    JAry(..),
+    JObj(..),
+    JSONError,
+    JSON,
+    fromJValue,
+    toJValue,
+    whenRight,
+    mapEithers
   ) where
 
 data JValue = JString String
@@ -17,44 +19,79 @@ data JValue = JString String
             | JInteger Integer
             | JBool Bool
             | JNull
-            | JObject [(String, JValue)]
-            | JArray [JValue]
+            | JObject (JObj JValue)
+            | JArray (JAry JValue)
               deriving (Eq, Ord, Show, Read)
+newtype JAry a = JAry {
+      fromJAry :: [a]
+    } deriving (Eq, Ord, Show, Read)
+newtype JObj a = JObj {
+      fromJObj :: [(String, a)]
+    } deriving (Eq, Ord, Show, Read)
 
-getString :: JValue -> Maybe String
-getString (JString s) = Just s
-getString _           = Nothing
+type JSONError = String
 
-getDouble :: JValue -> Maybe Double
-getDouble (JDouble d) = Just d
-getDouble _           = Nothing
+class JSON a where
+  toJValue :: a -> JValue
+  fromJValue :: JValue -> Either JSONError a
 
-getInteger :: JValue -> Maybe Integer
-getInteger (JInteger i) = Just i
-getInteger _           = Nothing
+returnJSONError t = Left ("Not a JSON " ++ t)
 
-getBool :: JValue -> Maybe Bool
-getBool (JBool b) = Just b
-getBool _           = Nothing
+instance JSON JValue where
+  toJValue = id
+  fromJValue = Right
+instance JSON String where
+  toJValue = JString
+  fromJValue (JString s) = Right s
+  fromJValue _ = returnJSONError "string"
+instance JSON Integer where
+  toJValue = JInteger
+  fromJValue (JInteger i) = Right i
+  fromJValue _ = returnJSONError "integer"
+instance JSON Double where
+  toJValue = JDouble
+  fromJValue (JDouble d) = Right d
+  fromJValue _ = returnJSONError "double"
+instance JSON Bool where
+  toJValue = JBool
+  fromJValue (JBool b) = Right b
+  fromJValue _ = returnJSONError "bool"
 
-getObject :: JValue -> Maybe [(String, JValue)]
-getObject (JObject o) = Just o
-getObject _           = Nothing
+-- Utilities
+whenRight :: (b -> c) -> Either a b -> Either a c
+whenRight _ (Left err) = Left err
+whenRight f (Right a) = Right (f a)
+mapEithers :: (a -> Either b c) -> [a] -> Either b [c]
+mapEithers f (x:xs) = case mapEithers f xs of
+                        Left err -> Left err
+                        Right ys -> case f x of
+                                      Left err -> Left err
+                                      Right y -> Right (y:ys)
+mapEithers _ _ = Right []
 
-getArray :: JValue -> Maybe [JValue]
-getArray (JArray a) = Just a
-getArray _          = Nothing
+instance (JSON a) => JSON (JAry a) where
+  toJValue = jaryToJValue
+    where jaryToJValue = JArray . JAry . map toJValue . fromJAry
+  fromJValue = jaryFromJValue
+    where jaryFromJValue (JArray (JAry a)) =
+            whenRight JAry (mapEithers fromJValue a)
+          jaryFromJValue _ = returnJSONError "array"
+instance (JSON a) => JSON (JObj a) where
+  toJValue = JObject . JObj . map (\(x,y) -> (x,toJValue y)) . fromJObj
 
-isNull :: JValue -> Bool
-isNull JNull = True
-isNull _ = False
+  fromJValue (JObject (JObj o)) = whenRight JObj (mapEithers unwrap o)
+    where unwrap (k,v) = whenRight ((,) k) (fromJValue v)
+  fromJValue _ = returnJSONError "object"
 
--- | Selectors
+-- | Selectors and constructors
 --
 -- Examples:
 --
--- >>> getString (JString "hello")
--- Just "hello"
+-- >>> fromJValue (toJValue "hello") :: Either JSONError String
+-- Right "hello"
 --
--- >>> getString (JInteger 3)
--- Nothing
+-- >>> toJValue 3
+-- JInteger 3
+--
+-- >>> whenRight fromJAry (fromJValue (toJValue (JAry [1.1,1.2,1.3,1.4,1.5]))) :: Either JSONError [Double]
+-- Right [1.1,1.2,1.3,1.4,1.5]
