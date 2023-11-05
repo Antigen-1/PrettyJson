@@ -1,13 +1,13 @@
 -- | PrettyJson.hs
 
-module PrettyJson.PrettyJson (string, renderJValue) where
+module PrettyJson (string, renderJValue) where
 
 import Numeric (showHex)
 import Data.Char (ord)
 import Data.Bits (shiftR, (.&.))
 
-import PrettyJson.SimpleJson (JValue(..))
-import PrettyJson.Prettify (Doc, (<->), char, integer, double, fsep, hcat, punctuate, text)
+import SimpleJson (JValue(..))
+import Prettify (Doc, (<->), char, integer, double, fsep, hcat, punctuate, text)
 
 -- Json String Constructor
 enclose :: Char -> Char -> Doc -> Doc
