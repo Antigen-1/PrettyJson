@@ -1,6 +1,8 @@
 -- | Prettyify.hs
 
-module Prettify where
+module Prettify
+  (Doc, empty, hardline, char, text, double, integer, (<->), hcat, fsep, (</>), punctuate, compact, pretty)
+where
 
 data Doc = Empty
          | Char Char
@@ -8,7 +10,7 @@ data Doc = Empty
          | Line
          | Concat Doc Doc
          | Union Doc Doc
-           deriving (Show,Eq)
+           deriving (Eq)
 -- Primitives
 -- Identity under concatenation
 empty :: Doc
@@ -93,12 +95,6 @@ compact x = transform [x]
                 a `Concat` b -> transform (a:b:ds)
                 _ `Union` b  -> transform (b:ds)
 
-fits :: Int -> String -> Bool
-w `fits` _ | w < 0 = False
-_ `fits` ""        = True
-_ `fits` ('\n':_)  = True
-w `fits` (_:cs)    = (w - 1) `fits` cs
-
 pretty :: Int -> Doc -> String
 pretty width x = best 0 [x]
     where best col (d:ds) =
@@ -114,13 +110,19 @@ pretty width x = best 0 [x]
 
           nicest col a b | (width - col) `fits` a = a
                          | otherwise                = b
+            where w `fits` _ | w < 0 = False
+                  _ `fits` ""        = True
+                  _ `fits` ('\n':_)  = True
+                  w `fits` (_:cs)    = (w - 1) `fits` cs
+
 
 -- | Coercion
 --
 -- Examples:
 --
--- >>> 2 `fits` " a"
--- True
---
 -- >>> compact (char 'f' <-> text "oo")
 -- "foo"
+
+-- Generic interfaces
+instance Show Doc where
+  show = compact
